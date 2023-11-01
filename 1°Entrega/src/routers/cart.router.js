@@ -1,10 +1,11 @@
-const { Router } = require('express');
+import { Router } from 'express';
+import fs from "fs";
+
 const router = Router();
-const fs = require('fs');
-const productsData = fs.readFileSync('D:\\CODER\\BackEnd\\PRIMERA ENTREGA\\1°Entrega\\src\\productos.json', 'utf-8');
+const productsData = fs.readFileSync('./src/productos.json', 'utf-8');
 const products = JSON.parse(productsData);
-const carritosFilePath = 'D:\\CODER\\BackEnd\\PRIMERA ENTREGA\\1°Entrega\\src\\carrito.json';
-const carritosData = fs.readFileSync('D:\\CODER\\BackEnd\\PRIMERA ENTREGA\\1°Entrega\\src\\carrito.json', 'utf-8');
+const carritosFilePath = './src/carrito.json';
+const carritosData = fs.readFileSync(carritosFilePath, 'utf-8');
 
 const myMiddleware = (req, res, next) => {
   console.log("Se ha recibido una nueva solicitud de Cart");
@@ -43,12 +44,16 @@ router.post('/', myMiddleware, async (req, res) => {
   }
 });
 
-// Ruta para listar los productos de un carrito por su ID
-router.get('/:cid', myMiddleware ,(req, res) => {
+router.get('/:cid', myMiddleware, (req, res) => {
   const { cid } = req.params;
   const cart = findCart(cid);
+
   if (cart) {
-    res.status(200).json({ message: 'Productos listados con éxito', products: cart.products });
+    res.render('cart', {
+      title: "Carrito",
+      cartId: cart.id,
+      products: cart.products,
+    });
   } else {
     res.status(404).json({ error: 'Carrito no encontrado' });
   }
@@ -80,9 +85,16 @@ router.post('/:cid/product/:pid', myMiddleware, async (req, res) => {
       res.status(404).json({ error: 'Producto no encontrado' });
       return;
     }
+    // Verifica si el producto ya está en el carrito
+    const existingCartItem = cart.products.find((item) => item.product === pid);
 
-
-    cart.products.push({ product: pid, quantity: quantity });
+    if (existingCartItem) {
+      // Si el producto ya está en el carrito, aumenta la cantidad
+      existingCartItem.quantity += quantity;
+    } else {
+      // Si el producto no está en el carrito, agrégalo
+      cart.products.push({ product: pid, quantity: quantity });
+    }
 
     // Escribe los datos actualizados de carritos en el archivo JSON
     fs.writeFileSync(carritosFilePath, JSON.stringify(carritos, null, 2), 'utf-8');
@@ -95,4 +107,4 @@ router.post('/:cid/product/:pid', myMiddleware, async (req, res) => {
 });
 
 
-module.exports = router;
+export default router;

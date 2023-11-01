@@ -1,8 +1,9 @@
 {
-  "name": "activity-01",
+  "name": "primera-entrega",
   "version": "0.0.1",
-  "description": "Esta es una prueba de router en express js",
-  "main": "src/app.js",
+  "description": "Esta es la primera entrega con socket.io y handlebars",
+  "main": "src/server.js",
+  "type":"module",
   "scripts": {
     "start": "node .",
     "dev": "nodemon ."
@@ -15,6 +16,8 @@
   "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
+    "express-handlebars": "^7.1.2",
+    "socket.io": "^4.7.2",
     "uuid": "^9.0.1"
   }
 }

@@ -1,9 +1,9 @@
-const { Router } = require('express');
-const router = Router();
-const fs = require('fs');
-const productsData = fs.readFileSync('D:\\CODER\\BackEnd\\PRIMERA ENTREGA\\1°Entrega\\src\\productos.json', 'utf-8');
-const products = JSON.parse(productsData);
+import { Router } from 'express';
+import fs from "fs";
 
+const router = Router();
+const productsData = fs.readFileSync('./src/productos.json', 'utf-8');
+const products = JSON.parse(productsData);
 
 const myMiddleware = (req, res, next) => {
   console.log("Se ha recibido una nueva solicitud de Products");
@@ -17,36 +17,37 @@ router.get('/products', myMiddleware ,async (req, res) => {
       const parsedLimit = parseInt(limit, 10);
       if (!isNaN(parsedLimit) && parsedLimit >= 0) {
         const limitedProducts = products.slice(0, parsedLimit);
-        const htmlResponse = `
-        <html>
-          <head>
-            <title>Lista de Productos</title>
-          </head>
-          <body>
-            <h1>Lista de Productos</h1>
-            <ul>
-              ${limitedProducts.map(product => `<li>${product.title} - Precio: $${product.price} - Id: ${product.id}</li> - Codigo: ${product.code} - Descripción: ${product.description} - Categoria: ${product.category} - Stock: ${product.stock}` ).join('')}
-            </ul>
-          </body>
-        </html>
-      `;
-        return res.send(htmlResponse);
+        const productsForTemplate = limitedProducts.map(product => ({
+          title: product.title,
+          price: product.price,
+          id: product.id,
+          code: product.code,
+          description: product.description,
+          category: product.category,
+          stock: product.stock,
+        }));
+
+        return res.render('home', {
+          title: 'Lista de Productos (Limitada)',
+          products: productsForTemplate,
+        });
       }
     }
-    const htmlResponse = `
-    <html>
-      <head>
-        <title>Lista de Productos</title>
-      </head>
-      <body>
-        <h1>Lista de Productos</h1>
-        <ul>
-          ${products.map(product => `<li>${product.title} - Precio: $${product.price} - Id: ${product.id}</li> - Codigo: ${product.code} - Descripción: ${product.description} - Categoria: ${product.category} - Stock: ${product.stock}`).join('')}
-        </ul>
-      </body>
-    </html>
-  `;
-    return res.send(htmlResponse);
+    const productsForTemplate = products.map(product => ({
+      title: product.title,
+      price: product.price,
+      id: product.id,
+      code: product.code,
+      description: product.description,
+      category: product.category,
+      stock: product.stock,
+    }));
+    
+    return res.render('home', {
+      title: 'Lista de Productos',
+      products: productsForTemplate,
+    });
+    
   } catch (error) {
     console.error('Error: ', error);
   }
@@ -60,39 +61,15 @@ router.get('/products/:productId', myMiddleware, async (req, res) => {
     
     if (product) {
       // Si se encontró el producto, devuelve solo ese producto
-      const htmlResponse = `
-      <html>
-        <head>
-          <title>Detalles del Producto</title>
-        </head>
-        <body>
-          <h1>Detalles del Producto</h1>
-          <ul>
-            <li>Nombre: ${product.title}</li>
-            <li>Precio: $${product.price}</li>
-            <li>ID: ${product.id}</li>
-            <li>Código: ${product.code}</li>
-            <li>Stock: ${product.stock}</li>
-            <li>Categoria: ${product.category}</li>
-          </ul>
-        </body>
-      </html>
-    `;
-      return res.send(htmlResponse);
+      return res.render('productDetail', {
+        title: 'Detalle del Producto',
+        product,
+      });
     } else {
-      // Si no se encontró el producto, devuelve un mensaje de error
-      const htmlResponseError = `
-      <html>
-        <head>
-          <title>Detalles del Producto</title>
-        </head>
-        <body>
-          <h1 style="color: red;">ERROR</h1>
-          <p>Producto NO encontrado. Solicite un ID correcto</p>
-        </body>
-      </html>
-    `;
-      return res.send(htmlResponseError);
+      // Si no se encontró el producto, muestra una vista de error
+      return res.render('productNotFound', {
+        title: 'Producto No Encontrado',
+      });
     }
   } catch (error) {
     console.error('Error: ', error);
@@ -100,14 +77,29 @@ router.get('/products/:productId', myMiddleware, async (req, res) => {
   }
 });
 
+// Lee los datos del archivo JSON y devuelve un array de productos
+function readProductsFromFile() {
+  const productsData = fs.readFileSync('./src/productos.json', 'utf-8');
+  return JSON.parse(productsData);
+}
+
+// Escribe los datos en el archivo JSON
+function writeProductsToFile(products) {
+  fs.writeFileSync('./src/productos.json', JSON.stringify(products, null, 2), 'utf-8');
+}
+
 //Creamos un producto con Post
 router.post('/products', myMiddleware, async (req, res) => {
   const { body } = req;
+  const products = readProductsFromFile();
+
   const newProduct = {
     ...body,
     id: products.length + 1,
   };
   products.push(newProduct);
+  writeProductsToFile(products);
+
   res.status(201).json(newProduct);
 });
 
@@ -115,6 +107,8 @@ router.post('/products', myMiddleware, async (req, res) => {
 router.put('/products/:productId', myMiddleware, async (req, res) => {
   const { productId } = req.params;
   const { body } = req;
+
+  const products = readProductsFromFile();
 
   try {
     const productIndex = products.findIndex((product) => product.id === parseInt(productId));
@@ -127,6 +121,8 @@ router.put('/products/:productId', myMiddleware, async (req, res) => {
       id: parseInt(productId), 
     };
     products[productIndex] = updatedProduct;
+    writeProductsToFile(products);
+
     return res.status(200).json(updatedProduct);
   } catch (error) {
     console.error('Error: ', error);
@@ -137,6 +133,7 @@ router.put('/products/:productId', myMiddleware, async (req, res) => {
 //Borramos un Producto con Delete
 router.delete('/products/:productId', myMiddleware, async (req, res) => {
   const { productId } = req.params;
+  const products = readProductsFromFile();
 
   try {
     const productIndex = products.findIndex((product) => product.id === parseInt(productId));
@@ -146,7 +143,8 @@ router.delete('/products/:productId', myMiddleware, async (req, res) => {
     }
 
     const deletedProduct = products.splice(productIndex, 1)[0];
-
+    writeProductsToFile(products);
+    
     return res.status(200).json(deletedProduct);
   } catch (error) {
     console.error('Error: ', error);
@@ -155,4 +153,4 @@ router.delete('/products/:productId', myMiddleware, async (req, res) => {
 });
 
 
-module.exports = router;
+export default router;

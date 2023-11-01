@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Products</title>
+</head>
+<body>
+
+    <!-- Formulario para agregar un producto -->
+    <form id="addProductForm">
+        <label for="productTitle">Nombre del Producto</label>
+        <input type="text" id="productTitle" name="productTitle" required>
+        
+        <label for="productPrice">Precio</label>
+        <input type="number" id="productPrice" name="productPrice" required>
+
+        <label for="productCode">Codigo</label>
+        <input type="text" id="productCode" name="productCode" required>
+
+        <label for="productDescrpition">Descripción</label>
+        <input type="text" id="productDescrpition" name="productDescrpition" required>
+
+        <label for="productCategory">Categoría</label>
+        <input type="text" id="productCategory" name="productCategory" required>
+
+        <label for="productStock">Stock</label>
+        <input type="number" id="productStock" name="productStock" required>
+
+        
+        <button type="submit">Agregar Producto</button>
+    </form>
+
+    <!-- Formulario para eliminar un producto -->
+    <form id="deleteProductForm">
+        <label for="productIdToDelete">ID del Producto a Eliminar</label>
+        <input type="number" id="productIdToDelete" name="productIdToDelete" required>
+        
+        <button type="submit">Eliminar Producto</button>
+    </form>
+
+    <!-- Lista de Productos -->
+<div>
+  <h1>Lista de Productos 🔨</h1>
+  {{#each products}}
+    <div class="product">
+      <h2>{{this.title}}</h2>
+      <p>Precio: ${{this.price}}</p>
+      <p>Id: {{this.id}}</p>
+      <p>Código: {{this.code}}</p>
+      <p>Descripción: {{this.description}}</p>
+      <p>Categoría: {{this.category}}</p>
+      <p>Stock: {{this.stock}}</p>
+    </div>
+  {{/each}}
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/script.js"></script>
+</body>
+</html>
