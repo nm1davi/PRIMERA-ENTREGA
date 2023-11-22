@@ -6,3 +6,6 @@ Además, cree una vista “realTimeProducts.handlebars”, la cual vivirá en el
 Al trabajar con websockets, cada vez que creemos un producto nuevo, o bien cada vez que eliminemos un producto, se debe actualizar automáticamente en dicha vista la lista.
 
 
+Profe ahora agregue que cuando se agrega un producto a la lista se crea en json pero no hace falta recargar la página, automáticamente se puede visualizar el producto, lo mismo cuando se elimina. 
+Ademas ahora puedo agregar productos con un router.post y cuando agrego el producto se puede visualizar el producto en la pantalla automáticamente. 
+
