@@ -1,14 +1,14 @@
 import { Server } from 'socket.io';
 import fs from 'fs';
-
+let io;
 // Lee la lista de productos desde el archivo JSON
 const productsData = fs.readFileSync('./src/productos.json', 'utf-8');
 let products = JSON.parse(productsData);
 
 export const init = (httpServer) => {
-  const socketServer = new Server(httpServer);
+  io = new Server(httpServer);
 
-  socketServer.on('connection', (socketClient) => {
+  io.on('connection', (socketClient) => {
     console.log(`Nuevo cliente socket conectado ${socketClient.id} 🎊`);
 
     // Emitir la lista de productos al cliente cuando se conecta
@@ -24,7 +24,7 @@ export const init = (httpServer) => {
       fs.writeFileSync('./src/productos.json', JSON.stringify(products, null, 2), 'utf-8');
       
       // Emitir un evento 'productsList' con la lista actualizada de productos
-      socketServer.emit('productsList', products);
+      io.emit('productAdded', product);
     });
 
     // Escucha el evento 'deleteProduct' para eliminar un producto
@@ -40,10 +40,21 @@ export const init = (httpServer) => {
         fs.writeFileSync('./src/productos.json', JSON.stringify(products, null, 2), 'utf-8');
 
         // Emitir un evento 'productsList' con la lista actualizada de productos
-        socketServer.emit('productsList', products);
+        io.emit('productDeleted', productId);
       }
     });
 
-    // Puedes definir más eventos y lógica según tus necesidades.
   });
 };
+
+export const newProductFromApi = (product) =>{
+      // Agregar el nuevo producto a la lista de productos
+      product.id = products.length + 1;
+      products.push(product);
+
+      // Actualiza el archivo JSON con la lista actualizada de productos
+      fs.writeFileSync('./src/productos.json', JSON.stringify(products, null, 2), 'utf-8');
+      
+      // Emitir un evento 'productsList' con la lista actualizada de productos
+      io.emit('productAdded', product);
+}

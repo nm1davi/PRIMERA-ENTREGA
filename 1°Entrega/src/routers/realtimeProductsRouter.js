@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import { newProductFromApi } from '../sockets.js';
+
 const router = Router();
 import fs from "fs";
 const productsData = fs.readFileSync('./src/productos.json', 'utf-8');
@@ -18,6 +20,12 @@ router.get('/realtimeproducts', (req, res) => {
             title: "Real-Time Products",
             products: productsForTemplate,
       })
+});
+
+router.post('/api/realtimeproducts', (req, res) => {
+      const { body } = req;
+      newProductFromApi(body);
+      res.status(201).json({ message: 'Producto creado correctamente ✔'});
 });
 
 export default router;

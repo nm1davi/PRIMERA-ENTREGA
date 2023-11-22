@@ -40,10 +40,10 @@
     </form>
 
     <!-- Lista de Productos -->
-<div>
+<div id="productList">
   <h1>Lista de Productos 🔨</h1>
   {{#each products}}
-    <div class="product">
+    <div class="product" data-product-id="{{this.id}}">
       <h2>{{this.title}}</h2>
       <p>Precio: ${{this.price}}</p>
       <p>Id: {{this.id}}</p>
